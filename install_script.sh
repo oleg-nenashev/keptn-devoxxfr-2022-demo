@@ -15,7 +15,7 @@ trap "trap_ctrlc" 2
 KIND_KEPTN_VERSION="0.14.1 - Devoxx FR Demo"
 KEPTN_VERSION=0.14.1
 JOB_EXECUTOR_SERVICE_VERSION=0.1.8
-
+PROMETHEUS_SERVICE_VERSION=0.7.3
 
 # This is the install script that is included in 'docker build' and executes on 'docker run'
 echo "------------------------------------------------------------------------"
@@ -42,6 +42,12 @@ sleep 10
 echo "-- Waiting for all resources to be ready (timeout 2 mins) --"
 kubectl wait --for=condition=ready pods --all --all-namespaces --timeout=2m
 
+echo "-- Installing Prometheus"
+kubectl create namespace monitoring
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm install prometheus prometheus-community/prometheus --namespace monitoring
+kubectl port-forward svc/prometheus-server 8080:80 -n monitoring
+
 echo "-- Installing Keptn via Helm. This will take a few minutes (timeout 10mins) --"
 extra_params=""
 
@@ -60,6 +66,12 @@ kubectl -n keptn delete pods --selector=app.kubernetes.io/name=bridge --wait
 
 echo "-- Installing Job Executor Service --"
 helm install -n keptn job-executor-service https://github.com/keptn-contrib/job-executor-service/releases/download/$JOB_EXECUTOR_SERVICE_VERSION/job-executor-service-$JOB_EXECUTOR_SERVICE_VERSION.tgz
+
+echo "-- Install Prometheus service"
+helm upgrade --install -n keptn prometheus-service https://github.com/keptn-contrib/prometheus-service/releases/download/${PROMETHEUS_SERVICE_VERSION}/prometheus-service-${PROMETHEUS_SERVICE_VERSION}.tgz --reuse-values
+kubectl -n monitoring apply -f https://raw.githubusercontent.com/keptn-contrib/prometheus-service/${PROMETHEUS_SERVICE_VERSION}/deploy/role.yaml
+helm upgrade -n keptn prometheus-service https://github.com/keptn-contrib/prometheus-service/releases/download/<VERSION>/prometheus-service-${PROMETHEUS_SERVICE_VERSION}.tgz --reuse-values --set=prometheus.namespace="monitoring",prometheus.endpoint="http://prometheus-server.monitoring.svc.cluster.local:8",prometheus.namespace_am="monitoring"
+keptn configure monitoring prometheus --project=sockshop --service=carts
 
 echo "-- Wait for all pods in Keptn namespace to signal ready. (timeout 2 mins) --"
 kubectl -n keptn wait --for=condition=ready pods --all --timeout=2m
