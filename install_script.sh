@@ -12,9 +12,10 @@ function trap_ctrlc ()
 trap "trap_ctrlc" 2
 
 # Set global variables
-KIND_KEPTN_VERSION=0.0.12
-KEPTN_VERSION=0.13.4
+KIND_KEPTN_VERSION="0.14.1 - Devoxx FR Demo"
+KEPTN_VERSION=0.14.1
 JOB_EXECUTOR_SERVICE_VERSION=0.1.8
+
 
 # This is the install script that is included in 'docker build' and executes on 'docker run'
 echo "------------------------------------------------------------------------"
@@ -43,12 +44,7 @@ kubectl wait --for=condition=ready pods --all --all-namespaces --timeout=2m
 
 echo "-- Installing Keptn via Helm. This will take a few minutes (timeout 10mins) --"
 extra_params=""
-if [ "$LOOK_AND_FEEL" == "CA" ]; then
-  echo "   > Using Cloud Automation Look and Feel";
-  extra_params="--set=control-plane.bridge.lookAndFeelUrl=https://raw.githubusercontent.com/agardnerIT/thekindkeptn/main/ca/lookandfeel.zip"
-  else
-    echo "   > Using default look and feel";
-fi
+
 
 helm install keptn https://github.com/keptn/keptn/releases/download/$KEPTN_VERSION/keptn-$KEPTN_VERSION.tgz $extra_params \
   -n keptn --create-namespace \
@@ -64,12 +60,6 @@ kubectl -n keptn delete pods --selector=app.kubernetes.io/name=bridge --wait
 
 echo "-- Installing Job Executor Service --"
 helm install -n keptn job-executor-service https://github.com/keptn-contrib/job-executor-service/releases/download/$JOB_EXECUTOR_SERVICE_VERSION/job-executor-service-$JOB_EXECUTOR_SERVICE_VERSION.tgz
-
-echo "-- Installing Helm Service --"
-helm install helm-service https://github.com/keptn/keptn/releases/download/$KEPTN_VERSION/helm-service-$KEPTN_VERSION.tgz -n keptn --create-namespace --wait --timeout=10m
-
-echo "-- Installing JMeter Service --"
-helm install jmeter-service https://github.com/keptn/keptn/releases/download/$KEPTN_VERSION/jmeter-service-$KEPTN_VERSION.tgz -n keptn --create-namespace --wait --timeout=10m
 
 echo "-- Wait for all pods in Keptn namespace to signal ready. (timeout 2 mins) --"
 kubectl -n keptn wait --for=condition=ready pods --all --timeout=2m
