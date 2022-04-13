@@ -88,9 +88,10 @@ keptn create service demoservice --project=helloworld
 echo "-- Create the Podtato Head Demo Project --"
 keptn create project podtatohead --shipyard=/root/sample-project/demo/shipyard.yaml
 keptn create service helloservice --project=podtatohead
+bash /root/sample-project/multistage-delivery.sh
+bash /root/sample-project/automated-operations.sh
 
-
-echo "-- Applying Job Config YAML File. This is the file the job-exector-service looks at to ultimately runs the helloworld container) --"
+echo "-- Helloworld Demo: Applying Job Config YAML File. This is the file the job-exector-service looks at to ultimately runs the helloworld container) --"
 wget https://raw.githubusercontent.com/agardnerIT/thekindkeptn/main/jobconfig.yaml
 keptn add-resource --project=helloworld --service=demoservice --stage=demo --resource=jobconfig.yaml --resourceUri=job/config.yaml
 
