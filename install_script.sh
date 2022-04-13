@@ -46,7 +46,7 @@ echo "-- Installing Prometheus"
 kubectl create namespace monitoring
 helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 helm install prometheus prometheus-community/prometheus --namespace monitoring
-kubectl port-forward svc/prometheus-server 8080:80 -n monitoring
+# Times out kubectl port-forward svc/prometheus-server 8080:80 -n monitoring
 
 echo "-- Installing Keptn via Helm. This will take a few minutes (timeout 10mins) --"
 extra_params=""
@@ -84,6 +84,11 @@ echo "-- Create Keptn Hello World Project --"
 wget https://raw.githubusercontent.com/agardnerIT/thekindkeptn/main/shipyard.yaml
 keptn create project helloworld --shipyard=shipyard.yaml
 keptn create service demoservice --project=helloworld
+
+echo "-- Create the Podtato Head Demo Project --"
+keptn create project podtatohead --shipyard=/root/sample-project/demo/shipyard.yaml
+keptn create service helloservice --project=podtatohead
+
 
 echo "-- Applying Job Config YAML File. This is the file the job-exector-service looks at to ultimately runs the helloworld container) --"
 wget https://raw.githubusercontent.com/agardnerIT/thekindkeptn/main/jobconfig.yaml

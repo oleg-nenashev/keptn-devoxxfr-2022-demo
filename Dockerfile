@@ -14,6 +14,7 @@ RUN wget https://github.com/keptn/keptn/releases/download/$KEPTN_VERSION/keptn-$
 
 COPY install_script.sh /
 COPY k3dconfig.yaml /root/
+COPY sample-project /root/sample-project
 
 ENV PATH="${PATH}:/root"
 
